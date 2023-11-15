@@ -1,9 +1,9 @@
 import StackedLayout from '@/components/stacked-layout.component'
 
-export default function App() {
+export default function Artifacts() {
   return (
-    <StackedLayout dashboard={true}>
-      <p>Hello?</p>
+    <StackedLayout artifacts={true}>
+      <p>Artifacts?</p>
     </StackedLayout>
   )
 }

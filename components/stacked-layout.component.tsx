@@ -2,7 +2,9 @@
 
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { Fragment } from 'react'
+import { NextUIProvider } from '@nextui-org/react'
+import Image from 'next/image'
+import { Fragment, PropsWithChildren, createContext, useContext, useState } from 'react'
 
 const user = {
   name: 'Tom Cook',
@@ -10,13 +12,7 @@ const user = {
   imageUrl:
     'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
 }
-const navigation = [
-  { name: 'Dashboard', href: '#', current: true },
-  { name: 'Team', href: '#', current: false },
-  { name: 'Projects', href: '#', current: false },
-  { name: 'Calendar', href: '#', current: false },
-  { name: 'Reports', href: '#', current: false },
-]
+
 const userNavigation = [
   { name: 'Your Profile', href: '#' },
   { name: 'Settings', href: '#' },
@@ -27,17 +23,46 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function HomeComponent() {
-  return (
-    <>
-      {/*
-        This example requires updating your template:
+const StackedLayoutContext = createContext([
+  { name: 'Dashboard', href: '#', current: true },
+  { name: 'Team', href: '#', current: false },
+  { name: 'Projects', href: '#', current: false },
+  { name: 'Calendar', href: '#', current: false },
+  { name: 'Reports', href: '#', current: false },
+  { name: 'Artifacts', href: '/artifacts', current: false },
+])
 
-        ```
-        <html class="h-full bg-gray-100">
-        <body class="h-full">
-        ```
-      */}
+export default function StackedLayout(
+  props: PropsWithChildren<{
+    dashboard?: boolean
+    team?: boolean
+    projects?: boolean
+    calendar?: boolean
+    reports?: boolean
+    artifacts?: boolean
+  }>,
+) {
+  const [navigation, setNavigation] = useState([
+    { name: 'Dashboard', href: '/', current: props.dashboard ?? false },
+    { name: 'Team', href: '#', current: props.team ?? false },
+    { name: 'Projects', href: '#', current: props.projects ?? false },
+    { name: 'Calendar', href: '#', current: props.calendar ?? false },
+    { name: 'Reports', href: '#', current: props.reports ?? false },
+    { name: 'Artifacts', href: '/artifacts', current: props.artifacts ?? false },
+  ])
+
+  return (
+    <StackedLayoutContext.Provider value={navigation}>
+      <StackedLayoutNav>{props.children}</StackedLayoutNav>
+    </StackedLayoutContext.Provider>
+  )
+}
+
+function StackedLayoutNav(props: PropsWithChildren<{}>) {
+  let navigation = useContext(StackedLayoutContext)
+
+  return (
+    <NextUIProvider>
       <div className="min-h-full">
         <Disclosure as="nav" className="bg-gray-800">
           {({ open }) => (
@@ -46,10 +71,12 @@ export default function HomeComponent() {
                 <div className="flex h-16 items-center justify-between">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <img
+                      <Image
                         className="h-8 w-8"
                         src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
                         alt="Your Company"
+                        width={300}
+                        height={300}
                       />
                     </div>
                     <div className="hidden md:block">
@@ -89,7 +116,13 @@ export default function HomeComponent() {
                           <Menu.Button className="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                             <span className="absolute -inset-1.5" />
                             <span className="sr-only">Open user menu</span>
-                            <img className="h-8 w-8 rounded-full" src={user.imageUrl} alt="" />
+                            <Image
+                              className="h-8 w-8 rounded-full"
+                              src={user.imageUrl}
+                              alt=""
+                              width={256}
+                              height={256}
+                            />
                           </Menu.Button>
                         </div>
                         <Transition
@@ -157,7 +190,7 @@ export default function HomeComponent() {
                 <div className="border-t border-gray-700 pb-3 pt-4">
                   <div className="flex items-center px-5">
                     <div className="flex-shrink-0">
-                      <img className="h-10 w-10 rounded-full" src={user.imageUrl} alt="" />
+                      <Image className="h-10 w-10 rounded-full" src={user.imageUrl} alt="" width={256} height={256} />
                     </div>
                     <div className="ml-3">
                       <div className="text-base font-medium leading-none text-white">{user.name}</div>
@@ -196,11 +229,9 @@ export default function HomeComponent() {
           </div>
         </header>
         <main>
-          <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
-            <p>Hello?</p>
-          </div>
+          <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">{props.children}</div>
         </main>
       </div>
-    </>
+    </NextUIProvider>
   )
 }
