@@ -11,7 +11,6 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  console.log('RootLayout: Starting...')
   return (
     <html lang="en" className="h-full bg-gray-100">
       <head>

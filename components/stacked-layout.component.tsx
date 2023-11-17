@@ -46,7 +46,6 @@ function determineIsActive(pathname: string, item: INavigation) {
 }
 
 export default function StackedLayout(props: PropsWithChildren) {
-  console.log('StackedLayout: Starting...')
   const pathname = usePathname()
   console.log(`StackedLayout: pathname = ${pathname}`)
 

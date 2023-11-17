@@ -1,5 +1,37 @@
+import { ArtifactsResponse } from '@/components/artifacts/artifacts-response'
+import { ArtifactBreakdown } from '@/components/artifacts/breakdown/artifact-breakdown'
 import ArtifactBreakdownComponent from '@/components/artifacts/breakdown/breakdown.component'
 
-export default function ArtifactBreakdown({ params }: { params: { name: string } }) {
-  return <ArtifactBreakdownComponent name={params.name} />
+async function getArtifact(name: string): Promise<ArtifactsResponse> {
+  const res = await fetch(`http://localhost:9002/api/v2/artifact?name=${name}`, { next: { revalidate: 1 } })
+  // The return value is *not* serialized
+  // You can return Date, Map, Set, etc.
+
+  if (!res.ok) {
+    // This will activate the closest `error.js` Error Boundary
+    throw new Error('Failed to fetch data')
+  }
+
+  return res.json()
+}
+
+async function getArtifactBreakdown(artifactId: string): Promise<ArtifactBreakdown> {
+  const res = await fetch(`http://localhost:9002/api/v2/artifactBreakdown?artifactId=${artifactId}`, {
+    next: { revalidate: 1 },
+  })
+  // The return value is *not* serialized
+  // You can return Date, Map, Set, etc.
+
+  if (!res.ok) {
+    // This will activate the closest `error.js` Error Boundary
+    throw new Error('Failed to fetch data')
+  }
+
+  return res.json()
+}
+
+export default async function ArtifactBreakdown({ params }: { params: { name: string } }) {
+  const artifact = await getArtifact(params.name)
+  const artifactBreakdown = await getArtifactBreakdown(artifact.id)
+  return <ArtifactBreakdownComponent artifactBreakdown={artifactBreakdown} />
 }
