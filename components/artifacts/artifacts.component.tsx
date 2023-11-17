@@ -31,6 +31,8 @@ const statusColorMap: {
 }
 
 export default function ArtifactsComponent() {
+  console.log('ArtifactsComponent: Starting...')
+
   const router = useRouter()
   const defaultSelection = new Set('') as Selection
   const [selectedKeys, setSelectedKeys] = React.useState(defaultSelection)
@@ -50,10 +52,10 @@ export default function ArtifactsComponent() {
       },
       columnKey: Key,
     ) => {
-      console.log(`columnKey = ${columnKey}`)
-      console.log(`typeof columnKey = ${typeof columnKey}`)
+      // console.log(`columnKey = ${columnKey}`)
+      // console.log(`typeof columnKey = ${typeof columnKey}`)
       if (typeof columnKey !== 'string') {
-        console.error(`columnKey is not a string: ${columnKey}`)
+        // console.error(`columnKey is not a string: ${columnKey}`)
         return <p>ERROR</p>
       }
       const cellValue = user[columnKey]

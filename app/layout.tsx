@@ -1,3 +1,4 @@
+import StackedLayout from '@/components/stacked-layout.component'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
@@ -10,12 +11,15 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  console.log('RootLayout: Starting...')
   return (
     <html lang="en" className="h-full bg-gray-100">
       <head>
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
       </head>
-      <body className="h-full">{children}</body>
+      <body className="h-full">
+        <StackedLayout>{children}</StackedLayout>
+      </body>
     </html>
   )
 }

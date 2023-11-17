@@ -1,9 +1,4 @@
-import StackedLayout from '@/components/stacked-layout.component'
-
 export default function App() {
-  return (
-    <StackedLayout dashboard={true}>
-      <p>Hello?</p>
-    </StackedLayout>
-  )
+  console.log('App: Starting...')
+  return <p>Hello?</p>
 }

@@ -4,7 +4,8 @@ import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { NextUIProvider } from '@nextui-org/react'
 import Image from 'next/image'
-import { Fragment, PropsWithChildren, createContext, useContext, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { Fragment, PropsWithChildren } from 'react'
 
 const user = {
   name: 'Tom Cook',
@@ -23,43 +24,31 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-const StackedLayoutContext = createContext([
-  { name: 'Dashboard', href: '#', current: true },
-  { name: 'Team', href: '#', current: false },
-  { name: 'Projects', href: '#', current: false },
-  { name: 'Calendar', href: '#', current: false },
-  { name: 'Reports', href: '#', current: false },
-  { name: 'Artifacts', href: '/artifacts', current: false },
-])
-
-export default function StackedLayout(
-  props: PropsWithChildren<{
-    dashboard?: boolean
-    team?: boolean
-    projects?: boolean
-    calendar?: boolean
-    reports?: boolean
-    artifacts?: boolean
-  }>,
-) {
-  const [navigation, setNavigation] = useState([
-    { name: 'Dashboard', href: '/', current: props.dashboard ?? false },
-    { name: 'Team', href: '#', current: props.team ?? false },
-    { name: 'Projects', href: '#', current: props.projects ?? false },
-    { name: 'Calendar', href: '#', current: props.calendar ?? false },
-    { name: 'Reports', href: '#', current: props.reports ?? false },
-    { name: 'Artifacts', href: '/artifacts', current: props.artifacts ?? false },
-  ])
-
-  return (
-    <StackedLayoutContext.Provider value={navigation}>
-      <StackedLayoutNav>{props.children}</StackedLayoutNav>
-    </StackedLayoutContext.Provider>
-  )
+export interface INavigation {
+  name: string
+  href: string
 }
 
-function StackedLayoutNav(props: PropsWithChildren<{}>) {
-  let navigation = useContext(StackedLayoutContext)
+const navigation: INavigation[] = [
+  { name: 'Dashboard', href: '/' },
+  { name: 'Team', href: '#' },
+  { name: 'Projects', href: '#' },
+  { name: 'Calendar', href: '#' },
+  { name: 'Reports', href: '#' },
+  { name: 'Artifacts', href: '/artifacts' },
+]
+
+function determineIsActive(pathname: string, item: INavigation) {
+  if (item.href == '/') {
+    return pathname === item.href
+  }
+  return pathname.startsWith(item.href)
+}
+
+export default function StackedLayout(props: PropsWithChildren) {
+  console.log('StackedLayout: Starting...')
+  const pathname = usePathname()
+  console.log(`StackedLayout: pathname = ${pathname}`)
 
   return (
     <NextUIProvider>
@@ -81,21 +70,25 @@ function StackedLayoutNav(props: PropsWithChildren<{}>) {
                     </div>
                     <div className="hidden md:block">
                       <div className="ml-10 flex items-baseline space-x-4">
-                        {navigation.map((item) => (
-                          <a
-                            key={item.name}
-                            href={item.href}
-                            className={classNames(
-                              item.current
-                                ? 'bg-gray-900 text-white'
-                                : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                              'rounded-md px-3 py-2 text-sm font-medium',
-                            )}
-                            aria-current={item.current ? 'page' : undefined}
-                          >
-                            {item.name}
-                          </a>
-                        ))}
+                        {navigation.map((item) => {
+                          const isActive = determineIsActive(pathname, item)
+
+                          return (
+                            <a
+                              key={item.name}
+                              href={item.href}
+                              className={classNames(
+                                isActive
+                                  ? 'bg-gray-900 text-white'
+                                  : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                                'rounded-md px-3 py-2 text-sm font-medium',
+                              )}
+                              aria-current={isActive ? 'page' : undefined}
+                            >
+                              {item.name}
+                            </a>
+                          )
+                        })}
                       </div>
                     </div>
                   </div>
@@ -172,20 +165,24 @@ function StackedLayoutNav(props: PropsWithChildren<{}>) {
 
               <Disclosure.Panel className="md:hidden">
                 <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
-                  {navigation.map((item) => (
-                    <Disclosure.Button
-                      key={item.name}
-                      as="a"
-                      href={item.href}
-                      className={classNames(
-                        item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                        'block rounded-md px-3 py-2 text-base font-medium',
-                      )}
-                      aria-current={item.current ? 'page' : undefined}
-                    >
-                      {item.name}
-                    </Disclosure.Button>
-                  ))}
+                  {navigation.map((item) => {
+                    const isActive = determineIsActive(pathname, item)
+
+                    return (
+                      <Disclosure.Button
+                        key={item.name}
+                        as="a"
+                        href={item.href}
+                        className={classNames(
+                          isActive ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                          'block rounded-md px-3 py-2 text-base font-medium',
+                        )}
+                        aria-current={isActive ? 'page' : undefined}
+                      >
+                        {item.name}
+                      </Disclosure.Button>
+                    )
+                  })}
                 </div>
                 <div className="border-t border-gray-700 pb-3 pt-4">
                   <div className="flex items-center px-5">
