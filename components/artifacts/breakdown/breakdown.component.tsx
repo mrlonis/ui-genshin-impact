@@ -1,16 +1,33 @@
 'use client'
 
-import { ArtifactBreakdown } from './artifact-breakdown'
+import { ArtifactBreakdown, ArtifactBreakdownMap } from './artifact-breakdown'
 
-function createArrayString(array: string[] | null | undefined): string {
-  if (!array) {
+function createArrayString(artifactBreakdownMap: ArtifactBreakdownMap | null | undefined): string {
+  if (!artifactBreakdownMap) {
     return 'null'
   }
-  return array.join(' / ')
+  let x = 0
+  let returnValue = ''
+  for (const [key, value] of Object.entries(artifactBreakdownMap)) {
+    if (x != 0) {
+      returnValue += ' / '
+    }
+    returnValue += `${key}: (`
+    let i = 0
+    for (let character of value) {
+      if (i != 0) {
+        returnValue += ', '
+      }
+      returnValue += `${character.name}`
+      i += 1
+    }
+    returnValue += ')'
+    x += 1
+  }
+  return returnValue
 }
 
 export default function ArtifactBreakdownComponent(props: { artifactBreakdown: ArtifactBreakdown }) {
-  console.log(props.artifactBreakdown)
   // URL -> `/dashboard?search=my-project`
   // `search` -> 'my-project'
   return (
