@@ -26,6 +26,8 @@ async function getArtifactBreakdown(artifactId: string): Promise<ArtifactBreakdo
   // You can return Date, Map, Set, etc.
 
   if (!res.ok) {
+    console.error('getArtifactBreakdown(): Failed to fetch data')
+    console.error(res)
     // This will activate the closest `error.js` Error Boundary
     throw new Error('Failed to fetch data')
   }

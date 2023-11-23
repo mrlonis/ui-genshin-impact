@@ -2,6 +2,20 @@
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Table of Contents
+
+- [ui-genshin-impact](#ui-genshin-impact)
+  - [Table of Contents](#table-of-contents)
+  - [TODO](#todo)
+  - [Getting Started](#getting-started)
+  - [Learn More](#learn-more)
+  - [Deploy on Vercel](#deploy-on-vercel)
+
+## TODO
+
+- Update [breakdown.component.tsx](./app/components/breakdown.component.tsx) to render empty table if all stats are empty. Currently the table is a static table where the rows are hardcoded.
+- Update [artifacts.component.tsx](./app/components/artifacts.component.tsx) to use an [Autocomplete component](https://nextui.org/docs/components/autocomplete) for filtering artifact names
+
 ## Getting Started
 
 First, run the development server:

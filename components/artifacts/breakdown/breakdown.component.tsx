@@ -7,8 +7,6 @@ import {
   CardHeader,
   Divider,
   Image,
-  Listbox,
-  ListboxItem,
   Select,
   SelectItem,
   Table,
@@ -51,15 +49,20 @@ const columns = [
   { name: 'CHARACTERS', uid: 'characters' },
 ]
 
+const substatColumns = [
+  { name: 'NAME', uid: 'name' },
+  { name: 'SUBSTATS', uid: 'substats' },
+]
+
 function build_substats_string(substats: string[] | null | undefined): string {
   if (!substats) {
     return 'No Substats to Display!'
   }
   let returnValue = ''
   for (let substat of substats) {
-    returnValue += substat + ', '
+    returnValue += substat + ' | '
   }
-  return returnValue.slice(0, -2)
+  return returnValue.slice(0, -3)
 }
 
 const artifactDepths = [
@@ -72,7 +75,7 @@ const artifactDepths = [
 
 const fetcher = (artifactId: string, artifactDepth: string) => {
   const url = `http://localhost:9002/api/v2/artifactBreakdown?artifactId=${artifactId}&artifactDepth=${artifactDepth}`
-  return fetch(url).then((res) => res.json())
+  return fetch(url, { next: { revalidate: 1 } }).then((res) => res.json())
 }
 
 export default function ArtifactBreakdownComponent(props: { artifactId: string }) {
@@ -94,57 +97,108 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
     fetcher(artifactId, artifactDepth),
   )
 
-  const renderCell = React.useCallback((item: TableData, columnKey: string | number) => {
-    const cellValue = item[columnKey]
-
+  const renderSubstatsCell = React.useCallback((item: ArtifactBreakdownCharacter, columnKey: string | number) => {
     switch (columnKey) {
-      case 'stat':
-        let typedValue = cellValue as string
-        return <p>{typedValue}</p>
-      case 'characters':
-        let typedValueCharacters = cellValue as ArtifactBreakdownCharacter[]
+      case 'name':
         return (
-          <div className="w-full max-w-[100%] border-small px-1 py-2 rounded-small border-default-200 dark:border-default-100">
-            <Listbox items={typedValueCharacters} aria-label="Dynamic Actions" onAction={(key) => alert(key)}>
-              {(item) => (
-                <ListboxItem
-                  key={item.id}
-                  color={item.name === 'delete' ? 'danger' : 'default'}
-                  className={item.name === 'delete' ? 'text-danger' : ''}
-                  textValue={item.name}
-                >
-                  {item.name} | Substats: {build_substats_string(item.substats)}
-                </ListboxItem>
-              )}
-            </Listbox>
-          </div>
+          <p>
+            <b>{item.name}</b>
+          </p>
+        )
+      case 'substats':
+        return (
+          <p>
+            <b>Substats:</b> {build_substats_string(item.substats)}
+          </p>
         )
       default:
         return <p>Default</p>
     }
   }, [])
 
+  const renderCell = React.useCallback(
+    (item: TableData, columnKey: string | number) => {
+      switch (columnKey) {
+        case 'stat':
+          return (
+            <p>
+              <b>{item.stat}</b>
+            </p>
+          )
+        case 'characters':
+          return (
+            <Table hideHeader aria-label="Example static collection table">
+              <TableHeader columns={substatColumns}>
+                {(column) => (
+                  <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
+                    {column.name}
+                  </TableColumn>
+                )}
+              </TableHeader>
+              <TableBody items={item.characters} emptyContent={'No rows to display.'}>
+                {(item) => (
+                  <TableRow key={item.id}>
+                    {(columnKey) => (
+                      <TableCell className={columnKey === 'name' ? 'text-right w-[20%]' : 'text-left w-[85%]'}>
+                        {renderSubstatsCell(item, columnKey)}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )
+        default:
+          return <p>Default</p>
+      }
+    },
+    [renderSubstatsCell],
+  )
+
+  const renderPieceEffect = React.useCallback((artifactBreakdown: ArtifactBreakdown | null | undefined) => {
+    if (!artifactBreakdown) {
+      return <p>No Artifact to Display</p>
+    }
+    if (artifactBreakdown.onePieceSetEffect) {
+      return (
+        <p>
+          <b>1-Piece:</b> {artifactBreakdown.onePieceSetEffect}
+        </p>
+      )
+    }
+    if (artifactBreakdown.twoPieceSetEffect && artifactBreakdown.fourPieceSetEffect) {
+      return (
+        <p>
+          <b>2-Piece:</b> {artifactBreakdown.twoPieceSetEffect}
+          <br />
+          <b>4-Piece:</b> {artifactBreakdown.fourPieceSetEffect}
+        </p>
+      )
+    }
+    return <p>Default</p>
+  }, [])
+
+  const getImageUrl = (url: string | null | undefined) => {
+    if (!url) {
+      return 'https://avatars.githubusercontent.com/u/86160567?s=200&v=4'
+    }
+    return 'http://localhost:9002/api/' + url
+  }
+
   if (error) return <div>failed to load</div>
   if (isLoading) return <div>loading...</div>
   return (
     <Card className="max-w-[100%]">
       <CardHeader className="flex gap-3">
-        <Image
-          alt="artifact logo"
-          height={40}
-          radius="sm"
-          src={artifactBreakdown?.imageUrl ?? 'https://avatars.githubusercontent.com/u/86160567?s=200&v=4'}
-          width={40}
-        />
+        <Image alt="artifact logo" height={40} radius="sm" src={getImageUrl(artifactBreakdown?.imageUrl)} width={40} />
         <div className="flex flex-col">
           <p className="text-md">{artifactBreakdown?.name}</p>
         </div>
       </CardHeader>
       <Divider />
       <CardBody>
-        <p>1-Piece: {artifactBreakdown?.onePieceSetEffect ?? 'null'}</p>
-        <p>2-Piece: {artifactBreakdown?.twoPieceSetEffect ?? 'null'}</p>
-        <p>4-Piece: {artifactBreakdown?.fourPieceSetEffect ?? 'null'}</p>
+        {renderPieceEffect(artifactBreakdown)}
+        <br />
         <Select
           // items={artifactDepths}
           label="Select Artifact Depth"
@@ -169,28 +223,36 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
           </TableHeader>
           <TableBody emptyContent={'No rows to display.'}>
             <TableRow key="1">
-              <TableCell>Flower & Plume Stats</TableCell>
               <TableCell>
-                <Listbox
-                  items={artifactBreakdown?.characters ?? []}
-                  aria-label="Dynamic Actions"
-                  onAction={(key) => alert(key)}
-                >
-                  {(item) => (
-                    <ListboxItem
-                      key={item.id}
-                      color={item.name === 'delete' ? 'danger' : 'default'}
-                      className={item.name === 'delete' ? 'text-danger' : ''}
-                      textValue={item.name}
-                    >
-                      {item.name} | Substats: {build_substats_string(item.substats)}
-                    </ListboxItem>
-                  )}
-                </Listbox>
+                <b>Flower & Plume Stats</b>
+              </TableCell>
+              <TableCell>
+                <Table hideHeader aria-label="Example static collection table">
+                  <TableHeader columns={substatColumns}>
+                    {(column) => (
+                      <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
+                        {column.name}
+                      </TableColumn>
+                    )}
+                  </TableHeader>
+                  <TableBody items={artifactBreakdown?.characters ?? []} emptyContent={'No rows to display.'}>
+                    {(item) => (
+                      <TableRow key={item.id}>
+                        {(columnKey) => (
+                          <TableCell className={columnKey === 'name' ? 'text-right w-[20%]' : 'text-left w-[85%]'}>
+                            {renderSubstatsCell(item, columnKey)}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </TableCell>
             </TableRow>
             <TableRow key="2">
-              <TableCell>Sands Stats</TableCell>
+              <TableCell>
+                <b>Sands Stats</b>
+              </TableCell>
               <TableCell>
                 <Table aria-label="Example table with custom cells">
                   <TableHeader columns={columns}>
@@ -214,7 +276,9 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
               </TableCell>
             </TableRow>
             <TableRow key="3">
-              <TableCell>Goblet Stats</TableCell>
+              <TableCell>
+                <b>Goblet Stats</b>
+              </TableCell>
               <TableCell>
                 <Table aria-label="Example table with custom cells">
                   <TableHeader columns={columns}>
@@ -238,7 +302,9 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
               </TableCell>
             </TableRow>
             <TableRow key="4">
-              <TableCell>Circlet Stats</TableCell>
+              <TableCell>
+                <b>Circlet Stats</b>
+              </TableCell>
               <TableCell>
                 <Table aria-label="Example table with custom cells">
                   <TableHeader columns={columns}>
