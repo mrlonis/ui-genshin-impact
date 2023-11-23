@@ -8,7 +8,6 @@ export interface ArtifactBreakdown {
   sandsStats: ArtifactBreakdownMap | null | undefined
   gobletStats: ArtifactBreakdownMap | null | undefined
   circletStats: ArtifactBreakdownMap | null | undefined
-  substats: ArtifactBreakdownMap | null | undefined
 }
 
 export interface ArtifactBreakdownMap {
@@ -19,4 +18,5 @@ export interface ArtifactBreakdownCharacter {
   id: string
   name: string
   imageUrl: string | null | undefined
+  substats: string[] | null | undefined
 }

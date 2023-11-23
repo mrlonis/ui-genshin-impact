@@ -48,6 +48,17 @@ const columns = [
   { name: 'CHARACTERS', uid: 'characters' },
 ]
 
+function build_substats_string(substats: string[] | null | undefined): string {
+  if (!substats) {
+    return 'No Substats to Display!'
+  }
+  let returnValue = ''
+  for (let substat of substats) {
+    returnValue += substat + ', '
+  }
+  return returnValue.slice(0, -2)
+}
+
 export default function ArtifactBreakdownComponent(props: { artifactBreakdown: ArtifactBreakdown }) {
   // URL -> `/dashboard?search=my-project`
   // `search` -> 'my-project'
@@ -64,7 +75,7 @@ export default function ArtifactBreakdownComponent(props: { artifactBreakdown: A
       case 'characters':
         let typedValueCharacters = cellValue as ArtifactBreakdownCharacter[]
         return (
-          <div className="w-full max-w-[260px] border-small px-1 py-2 rounded-small border-default-200 dark:border-default-100">
+          <div className="w-full max-w-[100%] border-small px-1 py-2 rounded-small border-default-200 dark:border-default-100">
             <Listbox items={typedValueCharacters} aria-label="Dynamic Actions" onAction={(key) => alert(key)}>
               {(item) => (
                 <ListboxItem
@@ -72,7 +83,7 @@ export default function ArtifactBreakdownComponent(props: { artifactBreakdown: A
                   color={item.name === 'delete' ? 'danger' : 'default'}
                   className={item.name === 'delete' ? 'text-danger' : ''}
                 >
-                  {item.name}
+                  {item.name} | Substats: {build_substats_string(item.substats)}
                 </ListboxItem>
               )}
             </Listbox>
@@ -172,30 +183,6 @@ export default function ArtifactBreakdownComponent(props: { artifactBreakdown: A
                   </TableHeader>
                   <TableBody
                     items={createTableData(props.artifactBreakdown.circletStats)}
-                    emptyContent={'No rows to display.'}
-                  >
-                    {(item) => (
-                      <TableRow key={item.id}>
-                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableCell>
-            </TableRow>
-            <TableRow key="4">
-              <TableCell>Subtats</TableCell>
-              <TableCell>
-                <Table aria-label="Example table with custom cells">
-                  <TableHeader columns={columns}>
-                    {(column) => (
-                      <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
-                        {column.name}
-                      </TableColumn>
-                    )}
-                  </TableHeader>
-                  <TableBody
-                    items={createTableData(props.artifactBreakdown.substats)}
                     emptyContent={'No rows to display.'}
                   >
                     {(item) => (
