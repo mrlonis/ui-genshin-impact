@@ -20,7 +20,7 @@ import {
 } from '@nextui-org/react'
 import React from 'react'
 import useSWR from 'swr'
-import { ArtifactBreakdownCharacter, ArtifactBreakdownMap } from './artifact-breakdown'
+import { ArtifactBreakdown, ArtifactBreakdownCharacter, ArtifactBreakdownMap } from './artifact-breakdown'
 
 interface TableData {
   [key: string]: string | number | ArtifactBreakdownCharacter[]
@@ -90,7 +90,9 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
     data: artifactBreakdown,
     error,
     isLoading,
-  } = useSWR([props.artifactId, artifactDepth], ([artifactId, artifactDepth]) => fetcher(artifactId, artifactDepth))
+  } = useSWR<ArtifactBreakdown, any, string[]>([props.artifactId, artifactDepth], ([artifactId, artifactDepth]) =>
+    fetcher(artifactId, artifactDepth),
+  )
 
   const renderCell = React.useCallback((item: TableData, columnKey: string | number) => {
     const cellValue = item[columnKey]
@@ -131,18 +133,18 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
           alt="artifact logo"
           height={40}
           radius="sm"
-          src={artifactBreakdown.imageUrl ?? 'https://avatars.githubusercontent.com/u/86160567?s=200&v=4'}
+          src={artifactBreakdown?.imageUrl ?? 'https://avatars.githubusercontent.com/u/86160567?s=200&v=4'}
           width={40}
         />
         <div className="flex flex-col">
-          <p className="text-md">{artifactBreakdown.name}</p>
+          <p className="text-md">{artifactBreakdown?.name}</p>
         </div>
       </CardHeader>
       <Divider />
       <CardBody>
-        <p>1-Piece: {artifactBreakdown.onePieceSetEffect ?? 'null'}</p>
-        <p>2-Piece: {artifactBreakdown.twoPieceSetEffect ?? 'null'}</p>
-        <p>4-Piece: {artifactBreakdown.fourPieceSetEffect ?? 'null'}</p>
+        <p>1-Piece: {artifactBreakdown?.onePieceSetEffect ?? 'null'}</p>
+        <p>2-Piece: {artifactBreakdown?.twoPieceSetEffect ?? 'null'}</p>
+        <p>4-Piece: {artifactBreakdown?.fourPieceSetEffect ?? 'null'}</p>
         <Select
           // items={artifactDepths}
           label="Select Artifact Depth"
@@ -167,6 +169,27 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
           </TableHeader>
           <TableBody emptyContent={'No rows to display.'}>
             <TableRow key="1">
+              <TableCell>Flower & Plume Stats</TableCell>
+              <TableCell>
+                <Listbox
+                  items={artifactBreakdown?.characters ?? []}
+                  aria-label="Dynamic Actions"
+                  onAction={(key) => alert(key)}
+                >
+                  {(item) => (
+                    <ListboxItem
+                      key={item.id}
+                      color={item.name === 'delete' ? 'danger' : 'default'}
+                      className={item.name === 'delete' ? 'text-danger' : ''}
+                      textValue={item.name}
+                    >
+                      {item.name} | Substats: {build_substats_string(item.substats)}
+                    </ListboxItem>
+                  )}
+                </Listbox>
+              </TableCell>
+            </TableRow>
+            <TableRow key="2">
               <TableCell>Sands Stats</TableCell>
               <TableCell>
                 <Table aria-label="Example table with custom cells">
@@ -177,29 +200,8 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
                       </TableColumn>
                     )}
                   </TableHeader>
-                  <TableBody items={createTableData(artifactBreakdown.sandsStats)} emptyContent={'No rows to display.'}>
-                    {(item) => (
-                      <TableRow key={item.id}>
-                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableCell>
-            </TableRow>
-            <TableRow key="2">
-              <TableCell>Goblet Stats</TableCell>
-              <TableCell>
-                <Table aria-label="Example table with custom cells">
-                  <TableHeader columns={columns}>
-                    {(column) => (
-                      <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
-                        {column.name}
-                      </TableColumn>
-                    )}
-                  </TableHeader>
                   <TableBody
-                    items={createTableData(artifactBreakdown.gobletStats)}
+                    items={createTableData(artifactBreakdown?.sandsStats)}
                     emptyContent={'No rows to display.'}
                   >
                     {(item) => (
@@ -212,6 +214,30 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
               </TableCell>
             </TableRow>
             <TableRow key="3">
+              <TableCell>Goblet Stats</TableCell>
+              <TableCell>
+                <Table aria-label="Example table with custom cells">
+                  <TableHeader columns={columns}>
+                    {(column) => (
+                      <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
+                        {column.name}
+                      </TableColumn>
+                    )}
+                  </TableHeader>
+                  <TableBody
+                    items={createTableData(artifactBreakdown?.gobletStats)}
+                    emptyContent={'No rows to display.'}
+                  >
+                    {(item) => (
+                      <TableRow key={item.id}>
+                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableCell>
+            </TableRow>
+            <TableRow key="4">
               <TableCell>Circlet Stats</TableCell>
               <TableCell>
                 <Table aria-label="Example table with custom cells">
@@ -223,7 +249,7 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
                     )}
                   </TableHeader>
                   <TableBody
-                    items={createTableData(artifactBreakdown.circletStats)}
+                    items={createTableData(artifactBreakdown?.circletStats)}
                     emptyContent={'No rows to display.'}
                   >
                     {(item) => (
