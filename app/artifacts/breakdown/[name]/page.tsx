@@ -19,7 +19,7 @@ async function getArtifact(name: string): Promise<ArtifactsResponse> {
 }
 
 async function getArtifactBreakdown(artifactId: string): Promise<ArtifactBreakdown> {
-  const res = await fetch(`http://localhost:9002/api/v2/artifactBreakdown?artifactId=${artifactId}`, {
+  const res = await fetch(`http://localhost:9002/api/v2/artifactBreakdown?artifactId=${artifactId}&artifactDepth=5`, {
     next: { revalidate: 1 },
   })
   // The return value is *not* serialized
@@ -33,8 +33,15 @@ async function getArtifactBreakdown(artifactId: string): Promise<ArtifactBreakdo
   return res.json()
 }
 
+const artifactDepths = [1, 2, 3, 4, 5]
+
 export default async function ArtifactBreakdown({ params }: { params: { name: string } }) {
   const artifact = await getArtifact(params.name)
   const artifactBreakdown = await getArtifactBreakdown(artifact.id)
-  return <ArtifactBreakdownComponent artifactBreakdown={artifactBreakdown} />
+
+  return (
+    <div>
+      <ArtifactBreakdownComponent artifactId={artifact.id} />
+    </div>
+  )
 }

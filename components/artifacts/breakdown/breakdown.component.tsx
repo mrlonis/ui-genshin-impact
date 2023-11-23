@@ -9,6 +9,8 @@ import {
   Image,
   Listbox,
   ListboxItem,
+  Select,
+  SelectItem,
   Table,
   TableBody,
   TableCell,
@@ -17,7 +19,8 @@ import {
   TableRow,
 } from '@nextui-org/react'
 import React from 'react'
-import { ArtifactBreakdown, ArtifactBreakdownCharacter, ArtifactBreakdownMap } from './artifact-breakdown'
+import useSWR from 'swr'
+import { ArtifactBreakdownCharacter, ArtifactBreakdownMap } from './artifact-breakdown'
 
 interface TableData {
   [key: string]: string | number | ArtifactBreakdownCharacter[]
@@ -59,13 +62,37 @@ function build_substats_string(substats: string[] | null | undefined): string {
   return returnValue.slice(0, -2)
 }
 
-export default function ArtifactBreakdownComponent(props: { artifactBreakdown: ArtifactBreakdown }) {
+const artifactDepths = [
+  { label: '1', value: 1 },
+  { label: '2', value: 2 },
+  { label: '3', value: 3 },
+  { label: '4', value: 4 },
+  { label: '5', value: 5 },
+]
+
+const fetcher = (artifactId: string, artifactDepth: string) => {
+  const url = `http://localhost:9002/api/v2/artifactBreakdown?artifactId=${artifactId}&artifactDepth=${artifactDepth}`
+  return fetch(url).then((res) => res.json())
+}
+
+export default function ArtifactBreakdownComponent(props: { artifactId: string }) {
   // URL -> `/dashboard?search=my-project`
   // `search` -> 'my-project'
+  const [artifactDepth, setArtifactDepth] = React.useState('1')
+
+  const handleSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (e.target) {
+      setArtifactDepth(e.target.value)
+    }
+  }
+
+  const {
+    data: artifactBreakdown,
+    error,
+    isLoading,
+  } = useSWR([props.artifactId, artifactDepth], ([artifactId, artifactDepth]) => fetcher(artifactId, artifactDepth))
+
   const renderCell = React.useCallback((item: TableData, columnKey: string | number) => {
-    console.log('renderCell')
-    console.log(item)
-    console.log(columnKey)
     const cellValue = item[columnKey]
 
     switch (columnKey) {
@@ -82,6 +109,7 @@ export default function ArtifactBreakdownComponent(props: { artifactBreakdown: A
                   key={item.id}
                   color={item.name === 'delete' ? 'danger' : 'default'}
                   className={item.name === 'delete' ? 'text-danger' : ''}
+                  textValue={item.name}
                 >
                   {item.name} | Substats: {build_substats_string(item.substats)}
                 </ListboxItem>
@@ -94,6 +122,8 @@ export default function ArtifactBreakdownComponent(props: { artifactBreakdown: A
     }
   }, [])
 
+  if (error) return <div>failed to load</div>
+  if (isLoading) return <div>loading...</div>
   return (
     <Card className="max-w-[100%]">
       <CardHeader className="flex gap-3">
@@ -101,18 +131,32 @@ export default function ArtifactBreakdownComponent(props: { artifactBreakdown: A
           alt="artifact logo"
           height={40}
           radius="sm"
-          src={props.artifactBreakdown.imageUrl ?? 'https://avatars.githubusercontent.com/u/86160567?s=200&v=4'}
+          src={artifactBreakdown.imageUrl ?? 'https://avatars.githubusercontent.com/u/86160567?s=200&v=4'}
           width={40}
         />
         <div className="flex flex-col">
-          <p className="text-md">{props.artifactBreakdown.name}</p>
+          <p className="text-md">{artifactBreakdown.name}</p>
         </div>
       </CardHeader>
       <Divider />
       <CardBody>
-        <p>1-Piece: {props.artifactBreakdown.onePieceSetEffect ?? 'null'}</p>
-        <p>2-Piece: {props.artifactBreakdown.twoPieceSetEffect ?? 'null'}</p>
-        <p>4-Piece: {props.artifactBreakdown.fourPieceSetEffect ?? 'null'}</p>
+        <p>1-Piece: {artifactBreakdown.onePieceSetEffect ?? 'null'}</p>
+        <p>2-Piece: {artifactBreakdown.twoPieceSetEffect ?? 'null'}</p>
+        <p>4-Piece: {artifactBreakdown.fourPieceSetEffect ?? 'null'}</p>
+        <Select
+          // items={artifactDepths}
+          label="Select Artifact Depth"
+          selectedKeys={[artifactDepth]}
+          className="max-w-xs"
+          onChange={handleSelectionChange}
+        >
+          {/* {(artifactDepth) => <SelectItem key={artifactDepth}>{artifactDepth}</SelectItem>} */}
+          {artifactDepths.map((artifactDepth) => (
+            <SelectItem key={artifactDepth.value} value={artifactDepth.value}>
+              {artifactDepth.label}
+            </SelectItem>
+          ))}
+        </Select>
       </CardBody>
       <Divider className="my-4" />
       <CardFooter>
@@ -133,10 +177,7 @@ export default function ArtifactBreakdownComponent(props: { artifactBreakdown: A
                       </TableColumn>
                     )}
                   </TableHeader>
-                  <TableBody
-                    items={createTableData(props.artifactBreakdown.sandsStats)}
-                    emptyContent={'No rows to display.'}
-                  >
+                  <TableBody items={createTableData(artifactBreakdown.sandsStats)} emptyContent={'No rows to display.'}>
                     {(item) => (
                       <TableRow key={item.id}>
                         {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
@@ -158,7 +199,7 @@ export default function ArtifactBreakdownComponent(props: { artifactBreakdown: A
                     )}
                   </TableHeader>
                   <TableBody
-                    items={createTableData(props.artifactBreakdown.gobletStats)}
+                    items={createTableData(artifactBreakdown.gobletStats)}
                     emptyContent={'No rows to display.'}
                   >
                     {(item) => (
@@ -182,7 +223,7 @@ export default function ArtifactBreakdownComponent(props: { artifactBreakdown: A
                     )}
                   </TableHeader>
                   <TableBody
-                    items={createTableData(props.artifactBreakdown.circletStats)}
+                    items={createTableData(artifactBreakdown.circletStats)}
                     emptyContent={'No rows to display.'}
                   >
                     {(item) => (
