@@ -1,6 +1,8 @@
 'use client'
 
 import {
+  Accordion,
+  AccordionItem,
   Card,
   CardBody,
   CardFooter,
@@ -18,7 +20,8 @@ import {
 } from '@nextui-org/react'
 import React from 'react'
 import useSWR from 'swr'
-import { ArtifactBreakdown, ArtifactBreakdownCharacter, ArtifactBreakdownMap } from './artifact-breakdown'
+import { ArtifactBreakdown, ArtifactBreakdownCharacter, ArtifactBreakdownMap } from './artifact-breakdown.model'
+import { build_substats_string, getImageUrl } from './utils'
 
 interface TableData {
   [key: string]: string | number | ArtifactBreakdownCharacter[]
@@ -44,26 +47,10 @@ function createTableData(artifactBreakdownMap: ArtifactBreakdownMap | null | und
   return returnValue
 }
 
-const columns = [
-  { name: 'STAT', uid: 'stat' },
-  { name: 'CHARACTERS', uid: 'characters' },
-]
-
 const substatColumns = [
   { name: 'NAME', uid: 'name' },
   { name: 'SUBSTATS', uid: 'substats' },
 ]
-
-function build_substats_string(substats: string[] | null | undefined): string {
-  if (!substats) {
-    return 'No Substats to Display!'
-  }
-  let returnValue = ''
-  for (let substat of substats) {
-    returnValue += substat + ' | '
-  }
-  return returnValue.slice(0, -3)
-}
 
 const artifactDepths = [
   { label: '1', value: 1 },
@@ -116,45 +103,6 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
     }
   }, [])
 
-  const renderCell = React.useCallback(
-    (item: TableData, columnKey: string | number) => {
-      switch (columnKey) {
-        case 'stat':
-          return (
-            <p>
-              <b>{item.stat}</b>
-            </p>
-          )
-        case 'characters':
-          return (
-            <Table hideHeader aria-label="Example static collection table">
-              <TableHeader columns={substatColumns}>
-                {(column) => (
-                  <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
-                    {column.name}
-                  </TableColumn>
-                )}
-              </TableHeader>
-              <TableBody items={item.characters} emptyContent={'No rows to display.'}>
-                {(item) => (
-                  <TableRow key={item.id}>
-                    {(columnKey) => (
-                      <TableCell className={columnKey === 'name' ? 'text-right w-[20%]' : 'text-left w-[85%]'}>
-                        {renderSubstatsCell(item, columnKey)}
-                      </TableCell>
-                    )}
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          )
-        default:
-          return <p>Default</p>
-      }
-    },
-    [renderSubstatsCell],
-  )
-
   const renderPieceEffect = React.useCallback((artifactBreakdown: ArtifactBreakdown | null | undefined) => {
     if (!artifactBreakdown) {
       return <p>No Artifact to Display</p>
@@ -178,12 +126,38 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
     return <p>Default</p>
   }, [])
 
-  const getImageUrl = (url: string | null | undefined) => {
-    if (!url) {
-      return 'https://avatars.githubusercontent.com/u/86160567?s=200&v=4'
-    }
-    return 'http://localhost:9002/api/' + url
-  }
+  const buildAccordion = React.useCallback(
+    (accordionData: TableData[]) => {
+      const accordionItems = accordionData.map((data) => {
+        return (
+          <AccordionItem key={data.id} aria-label={data.stat} title={data.stat}>
+            <Table hideHeader aria-label="Example static collection table">
+              <TableHeader columns={substatColumns}>
+                {(column) => (
+                  <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
+                    {column.name}
+                  </TableColumn>
+                )}
+              </TableHeader>
+              <TableBody items={data.characters} emptyContent={'No rows to display.'}>
+                {(artifactBreakdownCharacter) => (
+                  <TableRow key={artifactBreakdownCharacter.id}>
+                    {(columnKey) => (
+                      <TableCell className={columnKey === 'name' ? 'text-right w-[20%]' : 'text-left w-[85%]'}>
+                        {renderSubstatsCell(artifactBreakdownCharacter, columnKey)}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </AccordionItem>
+        )
+      })
+      return <Accordion selectionMode="multiple">{accordionItems}</Accordion>
+    },
+    [renderSubstatsCell],
+  )
 
   if (error) return <div>failed to load</div>
   if (isLoading) return <div>loading...</div>
@@ -223,108 +197,58 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
           </TableHeader>
           <TableBody emptyContent={'No rows to display.'}>
             <TableRow key="1">
-              <TableCell>
+              <TableCell className="w-[20%]">
                 <b>Flower & Plume Stats</b>
               </TableCell>
-              <TableCell>
-                <Table hideHeader aria-label="Example static collection table">
-                  <TableHeader columns={substatColumns}>
-                    {(column) => (
-                      <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
-                        {column.name}
-                      </TableColumn>
-                    )}
-                  </TableHeader>
-                  <TableBody items={artifactBreakdown?.characters ?? []} emptyContent={'No rows to display.'}>
-                    {(item) => (
-                      <TableRow key={item.id}>
-                        {(columnKey) => (
-                          <TableCell className={columnKey === 'name' ? 'text-right w-[20%]' : 'text-left w-[85%]'}>
-                            {renderSubstatsCell(item, columnKey)}
-                          </TableCell>
+              <TableCell className="w-[80%]">
+                <Accordion>
+                  <AccordionItem key="1" aria-label="Substats" title="Substats">
+                    <Table hideHeader aria-label="Example static collection table">
+                      <TableHeader columns={substatColumns}>
+                        {(column) => (
+                          <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
+                            {column.name}
+                          </TableColumn>
                         )}
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                      </TableHeader>
+                      <TableBody items={artifactBreakdown?.characters ?? []} emptyContent={'No rows to display.'}>
+                        {(item) => (
+                          <TableRow key={item.id}>
+                            {(columnKey) => (
+                              <TableCell className={columnKey === 'name' ? 'text-right w-[20%]' : 'text-left w-[85%]'}>
+                                {renderSubstatsCell(item, columnKey)}
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </AccordionItem>
+                </Accordion>
               </TableCell>
             </TableRow>
             <TableRow key="2">
-              <TableCell>
+              <TableCell className="w-[20%]">
                 <b>Sands Stats</b>
               </TableCell>
-              <TableCell>
-                <Table aria-label="Example table with custom cells">
-                  <TableHeader columns={columns}>
-                    {(column) => (
-                      <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
-                        {column.name}
-                      </TableColumn>
-                    )}
-                  </TableHeader>
-                  <TableBody
-                    items={createTableData(artifactBreakdown?.sandsStats)}
-                    emptyContent={'No rows to display.'}
-                  >
-                    {(item) => (
-                      <TableRow key={item.id}>
-                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+              <TableCell className="w-[80%]">
+                {buildAccordion(createTableData(artifactBreakdown?.sandsStats))}
               </TableCell>
             </TableRow>
             <TableRow key="3">
-              <TableCell>
+              <TableCell className="w-[20%]">
                 <b>Goblet Stats</b>
               </TableCell>
-              <TableCell>
-                <Table aria-label="Example table with custom cells">
-                  <TableHeader columns={columns}>
-                    {(column) => (
-                      <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
-                        {column.name}
-                      </TableColumn>
-                    )}
-                  </TableHeader>
-                  <TableBody
-                    items={createTableData(artifactBreakdown?.gobletStats)}
-                    emptyContent={'No rows to display.'}
-                  >
-                    {(item) => (
-                      <TableRow key={item.id}>
-                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+              <TableCell className="w-[80%]">
+                {buildAccordion(createTableData(artifactBreakdown?.gobletStats))}
               </TableCell>
             </TableRow>
             <TableRow key="4">
-              <TableCell>
+              <TableCell className="w-[20%]">
                 <b>Circlet Stats</b>
               </TableCell>
-              <TableCell>
-                <Table aria-label="Example table with custom cells">
-                  <TableHeader columns={columns}>
-                    {(column) => (
-                      <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
-                        {column.name}
-                      </TableColumn>
-                    )}
-                  </TableHeader>
-                  <TableBody
-                    items={createTableData(artifactBreakdown?.circletStats)}
-                    emptyContent={'No rows to display.'}
-                  >
-                    {(item) => (
-                      <TableRow key={item.id}>
-                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+              <TableCell className="w-[80%]">
+                {buildAccordion(createTableData(artifactBreakdown?.circletStats))}
               </TableCell>
             </TableRow>
           </TableBody>

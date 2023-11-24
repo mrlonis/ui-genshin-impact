@@ -1,5 +1,5 @@
 import { ArtifactsResponse } from '@/components/artifacts/artifacts-response'
-import { ArtifactBreakdown } from '@/components/artifacts/breakdown/artifact-breakdown'
+import { ArtifactBreakdown } from '@/components/artifacts/breakdown/artifact-breakdown.model'
 import ArtifactBreakdownComponent from '@/components/artifacts/breakdown/breakdown.component'
 
 // TODO - Eventually we'll want to remove this when the backend is deployed somewhere
