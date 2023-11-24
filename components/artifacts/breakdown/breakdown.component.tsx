@@ -23,25 +23,21 @@ import useSWR from 'swr'
 import { ArtifactBreakdown, ArtifactBreakdownCharacter, ArtifactBreakdownMap } from './artifact-breakdown.model'
 import { build_substats_string, getImageUrl } from './utils'
 
-interface TableData {
+interface AccordionData {
   [key: string]: string | number | ArtifactBreakdownCharacter[]
   id: number
   stat: string
   characters: ArtifactBreakdownCharacter[]
 }
 
-function createTableData(artifactBreakdownMap: ArtifactBreakdownMap | null | undefined): TableData[] {
+function createAccordionData(artifactBreakdownMap: ArtifactBreakdownMap | null | undefined): AccordionData[] {
   if (!artifactBreakdownMap) {
     return []
   }
-  let returnValue: TableData[] = []
+  let returnValue: AccordionData[] = []
   let i = 0
   for (const [key, value] of Object.entries(artifactBreakdownMap)) {
-    let characters: ArtifactBreakdownCharacter[] = []
-    for (let character of value) {
-      characters.push(character)
-    }
-    returnValue.push({ id: i, stat: key, characters: characters })
+    returnValue.push({ id: i, stat: key, characters: value })
     i += 1
   }
   return returnValue
@@ -127,7 +123,7 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
   }, [])
 
   const buildAccordion = React.useCallback(
-    (accordionData: TableData[]) => {
+    (accordionData: AccordionData[]) => {
       const accordionItems = accordionData.map((data) => {
         return (
           <AccordionItem key={data.id} aria-label={data.stat} title={data.stat}>
@@ -201,30 +197,11 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
                 <b>Flower & Plume Stats</b>
               </TableCell>
               <TableCell className="w-[80%]">
-                <Accordion>
-                  <AccordionItem key="1" aria-label="Substats" title="Substats">
-                    <Table hideHeader aria-label="Example static collection table">
-                      <TableHeader columns={substatColumns}>
-                        {(column) => (
-                          <TableColumn key={column.uid} align={column.uid === 'actions' ? 'center' : 'start'}>
-                            {column.name}
-                          </TableColumn>
-                        )}
-                      </TableHeader>
-                      <TableBody items={artifactBreakdown?.characters ?? []} emptyContent={'No rows to display.'}>
-                        {(item) => (
-                          <TableRow key={item.id}>
-                            {(columnKey) => (
-                              <TableCell className={columnKey === 'name' ? 'text-right w-[20%]' : 'text-left w-[85%]'}>
-                                {renderSubstatsCell(item, columnKey)}
-                              </TableCell>
-                            )}
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </AccordionItem>
-                </Accordion>
+                {buildAccordion(
+                  createAccordionData({
+                    Substats: artifactBreakdown?.characters,
+                  } as ArtifactBreakdownMap),
+                )}
               </TableCell>
             </TableRow>
             <TableRow key="2">
@@ -232,7 +209,7 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
                 <b>Sands Stats</b>
               </TableCell>
               <TableCell className="w-[80%]">
-                {buildAccordion(createTableData(artifactBreakdown?.sandsStats))}
+                {buildAccordion(createAccordionData(artifactBreakdown?.sandsStats))}
               </TableCell>
             </TableRow>
             <TableRow key="3">
@@ -240,7 +217,7 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
                 <b>Goblet Stats</b>
               </TableCell>
               <TableCell className="w-[80%]">
-                {buildAccordion(createTableData(artifactBreakdown?.gobletStats))}
+                {buildAccordion(createAccordionData(artifactBreakdown?.gobletStats))}
               </TableCell>
             </TableRow>
             <TableRow key="4">
@@ -248,7 +225,7 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
                 <b>Circlet Stats</b>
               </TableCell>
               <TableCell className="w-[80%]">
-                {buildAccordion(createTableData(artifactBreakdown?.circletStats))}
+                {buildAccordion(createAccordionData(artifactBreakdown?.circletStats))}
               </TableCell>
             </TableRow>
           </TableBody>
