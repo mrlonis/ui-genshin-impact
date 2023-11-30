@@ -37,8 +37,10 @@ function createAccordionData(artifactBreakdownMap: ArtifactBreakdownMap | null |
   let returnValue: AccordionData[] = []
   let i = 0
   for (const [key, value] of Object.entries(artifactBreakdownMap)) {
-    returnValue.push({ id: i, stat: key, characters: value })
-    i += 1
+    if (value !== null && value !== undefined) {
+      returnValue.push({ id: i, stat: key, characters: value })
+      i += 1
+    }
   }
   return returnValue
 }
@@ -124,6 +126,9 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
 
   const buildAccordion = React.useCallback(
     (accordionData: AccordionData[]) => {
+      if (!accordionData || accordionData.length === 0) {
+        return <p>No Artifact to Display</p>
+      }
       const accordionItems = accordionData.map((data) => {
         return (
           <AccordionItem key={data.id} aria-label={data.stat} title={data.stat}>

@@ -12,7 +12,7 @@ export interface ArtifactBreakdown {
 }
 
 export interface ArtifactBreakdownMap {
-  [key: string]: ArtifactBreakdownCharacter[]
+  [key: string]: ArtifactBreakdownCharacter[] | null | undefined
 }
 
 export interface ArtifactBreakdownCharacter {
