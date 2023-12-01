@@ -155,7 +155,11 @@ export default function ArtifactBreakdownComponent(props: { artifactId: string }
           </AccordionItem>
         )
       })
-      return <Accordion selectionMode="multiple">{accordionItems}</Accordion>
+      return (
+        <Accordion variant="splitted" selectionMode="multiple">
+          {accordionItems}
+        </Accordion>
+      )
     },
     [renderSubstatsCell],
   )
