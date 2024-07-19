@@ -22,13 +22,13 @@
     "@nextui-org/react": "^2.2.9",
     "framer-motion": "^11.0.3",
     "next": "~14.1.0",
-    "react": "^18.2.0",
+    "react": "^18.3.1",
     "react-dom": "^18.2.0",
     "swr": "^2.2.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.16",
-    "@types/react": "^18.2.53",
+    "@types/react": "^18.3.3",
     "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
