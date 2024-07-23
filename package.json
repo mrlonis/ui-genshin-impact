@@ -37,7 +37,7 @@
     "husky": "^9.0.10",
     "lint-staged": "^15.2.7",
     "postcss": "^8.4.39",
-    "prettier": "^3.2.5",
+    "prettier": "^3.3.3",
     "sort-json": "^2.0.1",
     "sort-package-json": "^2.10.0",
     "start-server-and-test": "^2.0.3",
