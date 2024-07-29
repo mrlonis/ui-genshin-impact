@@ -16,3 +16,51 @@ updates:
     allow:
       - dependency-type: 'all'
     open-pull-requests-limit: 99
+    groups:
+      babel-version-updates:
+        applies-to: version-updates
+        patterns:
+          - '@babel*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      babel-security-updates:
+        applies-to: security-updates
+        patterns:
+          - '@babel*'
+        update-types:
+          - 'patch'
+          - 'minor'
+      react-version-updates:
+        applies-to: version-updates
+        patterns:
+          - '*react*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      react-security-updates:
+        applies-to: security-updates
+        patterns:
+          - '*react*'
+        update-types:
+          - 'patch'
+          - 'minor'
+    ignore:
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/react*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'eslint'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'eslint-config-next'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'next'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: 'gitsubmodule'
+    directory: '/'
+    schedule:
+      interval: 'daily'
