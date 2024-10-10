@@ -45,8 +45,8 @@ export default function ArtifactsComponent(
     console.log('filterData(): Starting...')
     console.log(e.target.value)
     setNameFilter(e.target.value)
-    const filteredData = props.artifacts.filter(
-      (artifact) => artifact.name?.toLowerCase().includes(e.target.value.toLowerCase()),
+    const filteredData = props.artifacts.filter((artifact) =>
+      artifact.name?.toLowerCase().includes(e.target.value.toLowerCase()),
     )
     console.log(filteredData)
     setArtifactsData(filteredData)
@@ -97,7 +97,9 @@ export default function ArtifactsComponent(
         onSelectionChange={(value) => {
           const testValue = value as Set<string>
           setSelectedKeys(value)
-          const selectedUser = artifactsData.find((artifact) => artifact.id === testValue.entries().next().value[0])
+          const selectedUser = artifactsData.find(
+            (artifact) => artifact.id === (testValue.entries().next().value ?? [''])[0],
+          )
           if (selectedUser) {
             router.push(`/artifacts/breakdown/${selectedUser.name ?? 'error/error'}`)
           } else {
