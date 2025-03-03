@@ -21,10 +21,10 @@
     "@heroicons/react": "^2.2.0",
     "@nextui-org/react": "^2.6.11",
     "framer-motion": "^11.3.29",
-    "next": "~14.2.21",
+    "next": "~14.2.24",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "swr": "^2.2.4"
+    "swr": "^2.3.2"
   },
   "devDependencies": {
     "@types/node": "^20",
