@@ -21,7 +21,7 @@
     "@heroicons/react": "^2.2.0",
     "@nextui-org/react": "^2.6.11",
     "framer-motion": "^12.14.0",
-    "next": "~14.2.29",
+    "next": "~15.2.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "swr": "^2.3.3"
